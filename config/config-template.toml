@@ -1,0 +1,4 @@
+[llm]
+chat_model = ""    # The chat LLM model to use
+base_url = ""      # API endpoint URL
+api_key = ""       # Your API key
