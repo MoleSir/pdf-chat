@@ -39,7 +39,7 @@ class BM25Index:
 
 class FlatL2Index:
     def __init__(self, embed_model: str = 'all-MiniLM-L6-v2', model_cache_dir: str = './model'):
-        self.embed_model = SentenceTransformer(embed_model, cache_folder=model_cache_dir, local_files_only=True)
+        self.embed_model = SentenceTransformer(embed_model, cache_folder=model_cache_dir)
         self.faiss_index = None
 
     def build(self, documents: List[str], batch_size: int = 400):

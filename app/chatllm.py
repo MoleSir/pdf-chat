@@ -13,12 +13,13 @@ class ChatLLM:
             base_url=self.config['base_url'],
         )
     
-    def chat(self, prompt: str) -> str:
+    def chat(self, prompt: str, temperature: float=0.2) -> str:
         response = self.client.chat.completions.create(
             messages=[
                 {'role': 'user', 'content': prompt},
             ],
             model=self.config['chat_model'],
+            temperature=temperature,
         )
 
         return response.choices[0].message.content
@@ -38,11 +39,12 @@ class ChatMemoryLLM:
         self.system_prompt = system_prompt
         self.history = [{'role': 'system', 'content': self.system_prompt}]
 
-    def chat(self, prompt: str) -> str:
+    def chat(self, prompt: str, temperature: float=0.2) -> str:
         self.history.append({'role': 'user', 'content': prompt})
         response = self.client.chat.completions.create(
             messages=self.history,
             model=self.config['chat_model'],
+            temperature=temperature,
         )
         content = response.choices[0].message.content
         self.history.append({'role': 'assistant', 'content': content})

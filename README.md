@@ -9,12 +9,9 @@
 - PDF文档处理：上传并处理PDF文档，自动分割和向量化。
 - 智能问答：基于本地文档的精准问答能力。
 - 混合检索：结合FAISS进行语义检索和BM25进行关键词检索，提高检索召回率和准确性。
+- 结果重排序：交叉编码器（CrossEncoder）和LLM对检索结果进行重排序，优化相关性。
 - 用户友好界面：基于Gradio构建交互式Web界面，方便文档上传、提问和结果查看。
 
-
-## TODO
-
-- 结果重排序：交叉编码器（CrossEncoder）和LLM对检索结果进行重排序，优化相关性。
 
 
 ## 使用方法
@@ -25,19 +22,19 @@
     ```bash
     curl -LsSf https://astral.sh/uv/install.sh | sh
     ```
-2. .Clone the repository:
+2. 克隆仓库：
     ```
     git clone https://github.com/MoleSir/pdf-chat.git
     cd pdf-chat
     ```
-3. Create a new virtual environment and activate it:
+3. 创建新的虚拟环境并激活：
     ```
     uv venv --python 3.12
     source .venv/bin/activate  # On Unix/macOS
     # Or on Windows:
     # .venv\Scripts\activate
     ```
-4. Install dependencies:
+4. 下载依赖（需要一段时间）：
     ```
     uv pip install -r requirements.txt
     ```
@@ -65,7 +62,23 @@
 uv run main.py
 ```
 
-服务启动后，自动在浏览器中打开 `http://127.0.0.1:7860`。
+第一次启动会下载一些模型，需要等待一段时间。服务启动后，自动在浏览器中打开。
+
+
+
+## 使用展示
+
+### 聊天
+
+![](./asset/chat-page.png)
+
+### PDF 上传
+
+![](./asset/pdf-page.png)
+
+### 设置参数
+
+![](./asset/setting-page.png)
 
 
 

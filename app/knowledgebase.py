@@ -2,8 +2,8 @@ from app.index import FlatL2Index, BM25Index
 import uuid
 import logging
 from io import StringIO
-from typing import List, Tuple, Dict, Any, Optional
-from sentence_transformers import SentenceTransformer
+from typing import List, Tuple, Dict, Any
+from sentence_transformers import CrossEncoder
 from pdfminer.high_level import extract_text_to_fp
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import threading
@@ -19,10 +19,13 @@ class SearchResult:
 
 
 class KnowledgeBase:
-    def __init__(self, embed_model: str = 'all-MiniLM-L6-v2', model_cache_dir: str = './model'):
+    MODEL_CACHE_DIR = './model'
+
+    def __init__(self, embed_model: str = 'all-MiniLM-L6-v2'):
         # 两种索引
-        self.l2_index = FlatL2Index(embed_model, model_cache_dir)
+        self.l2_index = FlatL2Index(embed_model, KnowledgeBase.MODEL_CACHE_DIR)
         self.bm25_index =BM25Index()
+        self.cross_encoder = None
 
         # 映射表
         self.contents_map: Dict[str, str] = {}
@@ -38,6 +41,17 @@ class KnowledgeBase:
             self.contents_map.clear()
             self.metadatas_map.clear()
             self.id_order.clear()
+            self.cross_encoder = None
+
+    def enable_cross_encoder(self):
+        self.cross_encoder = CrossEncoder(
+            'sentence-transformers/distiluse-base-multilingual-cased-v2',
+            cache_folder=KnowledgeBase.MODEL_CACHE_DIR,
+        )
+
+    def disable_cross_encoder(self):
+        # 释放保证内存
+        self.cross_encoder = None
 
     @staticmethod
     def _extract_text(file_path: str) -> str:
@@ -130,6 +144,29 @@ class KnowledgeBase:
     def search_bm2(self, query: str, top_k: int = 5) -> List[SearchResult]:
         results = self.bm25_index.search(query, top_k=top_k)
         return self._pack_search_result(results)
+    
+    def rerank(self, query: str, results: List[SearchResult], top_k: int = 3) -> List[SearchResult]:
+        if self.cross_encoder is None:
+            return results
+        # 构建 cross 模型输入 [(查询,选中的文档)]
+        cross_inputs = [[query, result.text] for result in results]
+
+        try:
+            # 计算相关性得分
+            scores = self.cross_encoder.predict(cross_inputs)
+            # 重新赋值得分
+            for score, result in zip(scores, results):
+                result.score = float(score)
+            # 按得分排序
+            results = sorted(results, key=lambda x: x.score, reverse=True)
+            # 返回前K个结果
+            if top_k >= len(results):
+                return results
+            else:
+                return results[:top_k]
+        except Exception as e:
+            logging.error(f"交叉编码器重排序失败: {str(e)}")
+            return results
     
     def _pack_search_result(self, results: List[Tuple[float, int]]) -> List[SearchResult]:
         output = []
