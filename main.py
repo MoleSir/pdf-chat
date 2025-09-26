@@ -28,26 +28,22 @@ class RAGChatApp:
             else:
                 summary_lines.append(f"❌ {item['file']} 处理失败: {item['error']}")
         summary_lines.append(
-            f"\n📊 本次新增 {result['indexed']} 个文本块，当前总索引 {result['total_indexed']} 个"
+            f"\n📊 本次新增 {result['indexed']} 个文本块"
         )
 
         return "\n".join(summary_lines)
 
     def chat(self, query: str, history: list, top_k: int = 3):
         """RAG 聊天：检索 + 记忆对话"""
-        if not self.is_kb_ready or self.kb.faiss_index is None:
+        if not self.is_kb_ready:
             return history + [["用户", query], ["系统", "⚠️ 知识库未就绪，请先上传 PDF"]]
 
         # 1. 向量检索
-        query_emb = self.kb.embed_model.encode([query], convert_to_numpy=True).astype("float32")
-        distances, indices = self.kb.faiss_index.search(query_emb, top_k)
+        result = self.kb.search(query, top_k)
 
         retrieved_chunks = []
-        for idx in indices[0]:
-            if idx == -1:
-                continue
-            chunk_id = self.kb.faiss_id_order_for_index[idx]
-            retrieved_chunks.append(self.kb.faiss_contents_map[chunk_id])
+        for item in result:
+            retrieved_chunks.append(item['text'])
 
         if not retrieved_chunks:
             return history + [[query, "⚠️ 未检索到相关内容"]]

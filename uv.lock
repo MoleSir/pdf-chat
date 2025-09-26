@@ -558,6 +558,12 @@ wheels = [
 ]
 
 [[package]]
+name = "jieba"
+version = "0.42.1"
+source = { registry = "https://pypi.mirrors.ustc.edu.cn/simple/" }
+sdist = { url = "https://mirrors.ustc.edu.cn/pypi/packages/c6/cb/18eeb235f833b726522d7ebed54f2278ce28ba9438e3135ab0278d9792a2/jieba-0.42.1.tar.gz", hash = "sha256:055ca12f62674fafed09427f176506079bc135638a14e23e25be909131928db2", size = 19214172 }
+
+[[package]]
 name = "jinja2"
 version = "3.1.6"
 source = { registry = "https://pypi.mirrors.ustc.edu.cn/simple/" }
@@ -1089,6 +1095,7 @@ dependencies = [
     { name = "faiss-cpu" },
     { name = "fastapi" },
     { name = "gradio" },
+    { name = "jieba" },
     { name = "langchain-text-splitters" },
     { name = "markdown" },
     { name = "numpy" },
@@ -1096,6 +1103,7 @@ dependencies = [
     { name = "pdfminer" },
     { name = "pdfminer-six" },
     { name = "pydantic" },
+    { name = "rank-bm25" },
     { name = "requests" },
     { name = "sentence-transformers" },
     { name = "tomli" },
@@ -1107,6 +1115,7 @@ requires-dist = [
     { name = "faiss-cpu", specifier = ">=1.12.0" },
     { name = "fastapi", specifier = ">=0.117.1" },
     { name = "gradio", specifier = ">=5.47.0" },
+    { name = "jieba", specifier = ">=0.42.1" },
     { name = "langchain-text-splitters", specifier = ">=0.3.11" },
     { name = "markdown", specifier = ">=3.9" },
     { name = "numpy", specifier = ">=2.3.3" },
@@ -1114,6 +1123,7 @@ requires-dist = [
     { name = "pdfminer", specifier = ">=20191125" },
     { name = "pdfminer-six", specifier = ">=20250506" },
     { name = "pydantic", specifier = ">=2.11.9" },
+    { name = "rank-bm25", specifier = ">=0.2.2" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "sentence-transformers", specifier = ">=5.1.1" },
     { name = "tomli", specifier = ">=2.2.1" },
@@ -1376,6 +1386,18 @@ wheels = [
     { url = "https://mirrors.ustc.edu.cn/pypi/packages/fe/0f/25911a9f080464c59fab9027482f822b86bf0608957a5fcc6eaac85aa515/PyYAML-6.0.2-cp313-cp313-musllinux_1_1_x86_64.whl", hash = "sha256:68ccc6023a3400877818152ad9a1033e3db8625d899c72eacb5a668902e4d652", size = 751597 },
     { url = "https://mirrors.ustc.edu.cn/pypi/packages/14/0d/e2c3b43bbce3cf6bd97c840b46088a3031085179e596d4929729d8d68270/PyYAML-6.0.2-cp313-cp313-win32.whl", hash = "sha256:bc2fa7c6b47d6bc618dd7fb02ef6fdedb1090ec036abab80d4681424b84c1183", size = 140527 },
     { url = "https://mirrors.ustc.edu.cn/pypi/packages/fa/de/02b54f42487e3d3c6efb3f89428677074ca7bf43aae402517bc7cca949f3/PyYAML-6.0.2-cp313-cp313-win_amd64.whl", hash = "sha256:8388ee1976c416731879ac16da0aff3f63b286ffdd57cdeb95f3f2e085687563", size = 156446 },
+]
+
+[[package]]
+name = "rank-bm25"
+version = "0.2.2"
+source = { registry = "https://pypi.mirrors.ustc.edu.cn/simple/" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://mirrors.ustc.edu.cn/pypi/packages/fc/0a/f9579384aa017d8b4c15613f86954b92a95a93d641cc849182467cf0bb3b/rank_bm25-0.2.2.tar.gz", hash = "sha256:096ccef76f8188563419aaf384a02f0ea459503fdf77901378d4fd9d87e5e51d", size = 8347 }
+wheels = [
+    { url = "https://mirrors.ustc.edu.cn/pypi/packages/2a/21/f691fb2613100a62b3fa91e9988c991e9ca5b89ea31c0d3152a3210344f9/rank_bm25-0.2.2-py3-none-any.whl", hash = "sha256:7bd4a95571adadfc271746fa146a4bcfd89c0cf731e49c3d1ad863290adbe8ae", size = 8584 },
 ]
 
 [[package]]
