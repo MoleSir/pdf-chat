@@ -7,6 +7,15 @@ from sentence_transformers import SentenceTransformer
 from pdfminer.high_level import extract_text_to_fp
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import threading
+from dataclasses import dataclass
+
+
+@dataclass
+class SearchResult:
+    original_id: str
+    text: str
+    metadata: str 
+    score: float
 
 
 class KnowledgeBase:
@@ -105,30 +114,74 @@ class KnowledgeBase:
 
         return {"summary": processed_results, "indexed": len(all_chunks)}
 
-    def search(self, query: str, k: int = 5, method: str = "faiss") -> List[Dict[str, Any]]:
-        if method == "faiss":
-            if not self.l2_index:
-                return []
-            results = self.l2_index.search(query, k=k)
-        elif method == "bm25":
-            if not self.bm25_index:
-                return []
-            results = self.bm25_index.search(query, top_k=k)
-        else:
-            raise ValueError(f"Unknown search method {method}")
+    def search(self, query: str, top_k: int = 5, alpha: float = 0.7) -> List[SearchResult]:
+        """
+        hybrid_merge
+        """
+        results_vec = self.l2_index.search(query, top_k=top_k)
+        results_bm25 = self.bm25_index.search(query, top_k=top_k)
+        results = KnowledgeBase._hybrid_merge_scores(results_vec, results_bm25, alpha)
+        return self._pack_search_result(results)
 
+    def search_vector(self, query: str, top_k: int = 5) -> List[SearchResult]:
+        results = self.l2_index.search(query, top_k=top_k)
+        return self._pack_search_result(results)
+    
+    def search_bm2(self, query: str, top_k: int = 5) -> List[SearchResult]:
+        results = self.bm25_index.search(query, top_k=top_k)
+        return self._pack_search_result(results)
+    
+    def _pack_search_result(self, results: List[Tuple[float, int]]) -> List[SearchResult]:
         output = []
         for score, idx in results:
             if idx < 0 or idx >= len(self.id_order):
                 continue
             original_id = self.id_order[idx]
-            output.append({
-                "original_id": original_id,
-                "text": self.contents_map.get(original_id),
-                "metadata": self.metadatas_map.get(original_id),
-                "score": float(score)
-            })
+            result = SearchResult(
+                original_id, 
+                self.contents_map.get(original_id),
+                self.metadatas_map.get(original_id),
+                score
+            )
+            output.append(result)
         return output
+
+    def _hybrid_merge_scores(
+        list1: List[Tuple[float, int]], 
+        list2: List[Tuple[float, int]], 
+        alpha: float = 0.7
+    ) -> List[Tuple[float, int]]:
+        """
+        Hybrid merge of two score lists, returning List[(score, idx)].
+        """
+        merged_dict = {}
+
+        # --- list1 ---
+        if list1:
+            scores1 = [s for s, _ in list1]
+            max1, min1 = max(scores1), min(scores1)
+            for s, idx in list1:
+                norm_s = (s - min1) / (max1 - min1 + 1e-8)
+                merged_dict[idx] = alpha * norm_s
+
+        # --- list2 ---
+        if list2:
+            scores2 = [s for s, _ in list2]
+            max2, min2 = max(scores2), min(scores2)
+            for s, idx in list2:
+                norm_s = (s - min2) / (max2 - min2 + 1e-8)
+                if idx in merged_dict:
+                    merged_dict[idx] += (1 - alpha) * norm_s
+                else:
+                    merged_dict[idx] = (1 - alpha) * norm_s
+
+        # --- sort and return (score, idx) ---
+        merged_list = sorted(
+            [(score, int(idx)) for idx, score in merged_dict.items()],
+            key=lambda x: x[0],
+            reverse=True
+        )
+        return merged_list
 
 
 if __name__ == '__main__':

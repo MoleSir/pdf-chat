@@ -58,14 +58,14 @@ class FlatL2Index:
     def clear(self):
         self.faiss_index = None
 
-    def search(self, query: str, k: int = 5) -> List[Tuple[float, int]]:
+    def search(self, query: str, top_k: int = 5) -> List[Tuple[float, int]]:
         if not self.faiss_index:
             return []
         
         # 编码 query（注意转换为 float32）
         q_emb = self.embed_model.encode([query], convert_to_numpy=True).astype('float32')
         # 执行检索，返回距离 D 和索引位置 I
-        D, I = self.faiss_index.search(q_emb, k)
+        D, I = self.faiss_index.search(q_emb, top_k)
 
         return list(zip(map(float, D[0]), I[0]))
 

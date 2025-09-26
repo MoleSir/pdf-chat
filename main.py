@@ -43,7 +43,7 @@ class RAGChatApp:
 
         retrieved_chunks = []
         for item in result:
-            retrieved_chunks.append(item['text'])
+            retrieved_chunks.append(item.text)
 
         if not retrieved_chunks:
             return history + [[query, "⚠️ 未检索到相关内容"]]
